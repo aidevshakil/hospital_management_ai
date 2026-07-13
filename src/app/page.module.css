@@ -1,0 +1,231 @@
+.home {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero Section */
+.hero {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: var(--space-12) 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.heroContent {
+  display: grid;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .heroContent {
+    grid-template-columns: 1fr 1fr;
+    padding: var(--space-16) var(--space-4);
+  }
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 10;
+}
+
+.badge {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: var(--space-6);
+  display: inline-block;
+}
+
+.title {
+  font-size: 3rem;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: var(--space-4);
+  color: var(--text-main);
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 4rem;
+  }
+}
+
+.highlight {
+  color: var(--primary);
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-8);
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+.heroActions {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.heroImageContainer {
+  position: relative;
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heroImageWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.floatingCard {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  z-index: 20;
+  transition: transform var(--transition-normal);
+}
+
+.floatingCard:hover {
+  transform: translateY(-5px);
+}
+
+.iconBox {
+  font-size: 2rem;
+  background: white;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.floatingCard h3 {
+  color: var(--text-main);
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.floatingCard p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.statsCard {
+  bottom: 10%;
+  left: -5%;
+}
+
+.ratingCard {
+  top: 15%;
+  right: -5%;
+}
+
+@media (max-width: 1023px) {
+  .statsCard {
+    left: 5%;
+  }
+  .ratingCard {
+    right: 5%;
+  }
+}
+
+/* Services Section */
+.services {
+  padding: var(--space-16) var(--space-4);
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: var(--space-12);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sectionHeader h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: var(--space-4);
+}
+
+.sectionHeader p {
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+.serviceGrid {
+  /* Grid classes handle the layout */
+}
+
+.serviceCard {
+  background: var(--surface);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  transition: all var(--transition-normal);
+}
+
+.serviceCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.serviceIcon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-4);
+  background: #f0f9ff;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+
+.serviceCard h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  color: var(--text-main);
+}
+
+.serviceCard p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}

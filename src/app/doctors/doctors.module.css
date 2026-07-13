@@ -1,0 +1,158 @@
+.page {
+  min-height: 100vh;
+}
+
+.header {
+  background-color: var(--primary);
+  color: white;
+  padding: var(--space-12) 0;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: var(--space-2);
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  opacity: 0.9;
+}
+
+.content {
+  padding: var(--space-12) var(--space-4);
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-12);
+  background: white;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+@media (min-width: 768px) {
+  .filters {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.searchInput, .selectInput {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  background-color: var(--background);
+}
+
+.searchInput:focus, .selectInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.doctorImageContainer {
+  height: 250px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.doctorImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform var(--transition-normal);
+}
+
+.card:hover .doctorImage {
+  transform: scale(1.05);
+}
+
+.cardBody {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.cardBody h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.specialty {
+  color: var(--secondary);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+.details {
+  margin-bottom: var(--space-6);
+  flex: 1;
+}
+
+.details p {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.details span {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.noResults {
+  text-align: center;
+  padding: var(--space-12) 0;
+  color: var(--text-muted);
+}
+
+.noResults p {
+  margin-bottom: var(--space-4);
+  font-size: 1.125rem;
+}

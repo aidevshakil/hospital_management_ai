@@ -1,65 +1,113 @@
-import Image from "next/image";
+import Link from 'next/link';
+import styles from './page.module.css';
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className={styles.home}>
+      {/* Hero Section */}
+      <section className={styles.hero}>
+        <div className={`container ${styles.heroContent}`}>
+          <div className={styles.heroText}>
+            <span className={styles.badge}>24/7 Emergency Service</span>
+            <h1 className={styles.title}>
+              Your Health, <br />
+              <span className={styles.highlight}>Our Commitment</span>
+            </h1>
+            <p className={styles.subtitle}>
+              Experience modern, AI-driven healthcare with world-class specialists and cutting-edge facilities.
+            </p>
+            <div className={styles.heroActions}>
+              <Link href="/appointment" className="btn btn-primary">
+                Book Appointment
+              </Link>
+              <Link href="/doctors" className="btn btn-outline">
+                Find a Doctor
+              </Link>
+            </div>
+          </div>
+          <div className={styles.heroImageContainer}>
+            <div className={styles.heroImageWrapper}>
+              <img 
+                src="https://images.unsplash.com/photo-1551076805-e1869033e561?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+                alt="Modern Hospital Building" 
+                className={styles.heroImage}
+              />
+            </div>
+            
+            <div className={`${styles.floatingCard} ${styles.statsCard}`}>
+              <div className={styles.iconBox}>👨‍⚕️</div>
+              <div>
+                <h3>50+</h3>
+                <p>Top Specialists</p>
+              </div>
+            </div>
+            
+            <div className={`${styles.floatingCard} ${styles.ratingCard}`}>
+              <div className={styles.iconBox}>⭐</div>
+              <div>
+                <h3>4.9/5</h3>
+                <p>Patient Rating</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Services Section */}
+      <section id="services" className={`container ${styles.services}`}>
+        <div className={styles.sectionHeader}>
+          <h2>Our Core Services</h2>
+          <p>Comprehensive care tailored to your needs, from general medicine to specialized treatments.</p>
         </div>
-      </main>
+        
+        <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-8 ${styles.serviceGrid}`}>
+          {/* General Medicine */}
+          <div className={styles.serviceCard}>
+            <div className={styles.serviceIcon}>🩺</div>
+            <h3>General Medicine</h3>
+            <p>Expert primary care for everyday health needs, preventive checkups, and chronic condition management.</p>
+          </div>
+
+          {/* Cardiology */}
+          <div className={styles.serviceCard}>
+            <div className={styles.serviceIcon}>❤️</div>
+            <h3>Cardiology</h3>
+            <p>Advanced heart care with state-of-the-art diagnostics and specialized treatments.</p>
+          </div>
+
+          {/* Neurology */}
+          <div className={styles.serviceCard}>
+            <div className={styles.serviceIcon}>🧠</div>
+            <h3>Neurology</h3>
+            <p>Comprehensive treatment for nervous system disorders by leading neurologists.</p>
+          </div>
+
+          {/* Pediatrics */}
+          <div className={styles.serviceCard}>
+            <div className={styles.serviceIcon}>👶</div>
+            <h3>Pediatrics</h3>
+            <p>Compassionate healthcare for infants, children, and adolescents.</p>
+          </div>
+
+          {/* Surgery */}
+          <div className={styles.serviceCard}>
+            <div className={styles.serviceIcon}>⚕️</div>
+            <h3>Surgery</h3>
+            <p>Minimally invasive and complex surgical procedures in modern operation theaters.</p>
+          </div>
+
+          {/* Intensive Care */}
+          <div className={styles.serviceCard}>
+            <div className={styles.serviceIcon}>🏥</div>
+            <h3>Intensive Care (ICU)</h3>
+            <p>24/7 monitoring and life support for critically ill patients.</p>
+          </div>
+        </div>
+        
+        <div className="text-center mt-8">
+          <Link href="/services" className="btn btn-secondary">View All Services</Link>
+        </div>
+      </section>
     </div>
   );
 }
