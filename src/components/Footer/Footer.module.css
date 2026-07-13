@@ -1,0 +1,87 @@
+.footer {
+  background-color: var(--text-main);
+  color: #f1f5f9;
+  padding: var(--space-12) 0 0 0;
+  margin-top: auto;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
+}
+
+@media (min-width: 768px) {
+  .footerGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .footerGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: var(--space-4);
+}
+
+.logoText {
+  color: white;
+}
+
+.logoHighlight {
+  color: var(--secondary);
+}
+
+.description {
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  color: white;
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  color: #cbd5e1;
+}
+
+.linkList a:hover {
+  color: var(--secondary);
+}
+
+.emergencyCard {
+  background-color: #dc2626;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.emergencyText {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.emergencyNumber {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.copyright {
+  border-top: 1px solid #334155;
+  padding: var(--space-6) 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
