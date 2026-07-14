@@ -57,6 +57,13 @@
   color: #cbd5e1;
 }
 
+.linkList a {
+  display: inline-block;
+  width: 100%;
+  padding-bottom: 2px;
+  transition: color var(--transition-fast);
+}
+
 .linkList a:hover {
   color: var(--secondary);
 }
