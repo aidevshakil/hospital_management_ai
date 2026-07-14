@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import styles from './page.module.css';
+import AIChatSection from '../components/AIChatSection/AIChatSection';
 
 export default function Home() {
   return (
@@ -52,6 +53,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* AI Chat & Symptom Checker Section */}
+      <AIChatSection />
 
       {/* Services Section */}
       <section id="services" className={`container ${styles.services}`}>

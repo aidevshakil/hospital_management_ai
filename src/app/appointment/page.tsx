@@ -2,6 +2,15 @@
 import { useState } from 'react';
 import styles from './appointment.module.css';
 
+const DUMMY_DOCTORS = [
+  { id: 1, name: "Dr. Sarah Jenkins", specialty: "Cardiology" },
+  { id: 2, name: "Dr. Robert Chen", specialty: "Neurology" },
+  { id: 3, name: "Dr. Emily Smith", specialty: "Pediatrics" },
+  { id: 4, name: "Dr. Michael Hasan", specialty: "General Medicine" },
+  { id: 5, name: "Dr. Lisa Wong", specialty: "Surgery" },
+  { id: 6, name: "Dr. David Kumar", specialty: "Orthopedics" },
+];
+
 export default function AppointmentPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -20,8 +29,15 @@ export default function AppointmentPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'department') {
+      setFormData({ ...formData, department: value, doctor: '' });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
+
+  const availableDoctors = DUMMY_DOCTORS.filter(doc => doc.specialty === formData.department);
 
   return (
     <div className={styles.page}>
@@ -59,6 +75,7 @@ export default function AppointmentPage() {
                     <option value="Neurology">Neurology</option>
                     <option value="Pediatrics">Pediatrics</option>
                     <option value="Surgery">Surgery</option>
+                    <option value="Orthopedics">Orthopedics</option>
                   </select>
                 </div>
 
@@ -66,9 +83,9 @@ export default function AppointmentPage() {
                   <label htmlFor="doctor">Preferred Doctor (Optional)</label>
                   <select id="doctor" name="doctor" value={formData.doctor} onChange={handleChange}>
                     <option value="">Any Available Doctor</option>
-                    <option value="1">Dr. Sarah Jenkins</option>
-                    <option value="2">Dr. Robert Chen</option>
-                    <option value="3">Dr. Emily Smith</option>
+                    {availableDoctors.map(doc => (
+                      <option key={doc.id} value={doc.id}>{doc.name}</option>
+                    ))}
                   </select>
                 </div>
               </div>
