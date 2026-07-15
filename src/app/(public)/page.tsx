@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import styles from './page.module.css';
-import AIChatSection from '../components/AIChatSection/AIChatSection';
+import AIChatSection from '../../components/AIChatSection/AIChatSection';
 
 export default function Home() {
   return (
