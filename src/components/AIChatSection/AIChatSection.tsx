@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import styles from './AIChatSection.module.css';
 
@@ -9,6 +9,29 @@ export default function AIChatSection() {
     { role: 'ai', text: 'Hello! I am your AI Health Assistant. How can I help you today? You can describe your symptoms or ask me to book an appointment.' }
   ]);
   const [inputValue, setInputValue] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newMessages = [...messages, { role: 'user', text: `Uploaded document: ${file.name}` }];
+      setMessages(newMessages);
+      
+      setTimeout(() => {
+        setMessages(prev => [
+          ...prev, 
+          { 
+            role: 'ai', 
+            text: `I've analyzed your document (${file.name}). Based on the information, I recommend consulting a specialist.` 
+          },
+          {
+            role: 'action',
+            text: ''
+          }
+        ]);
+      }, 1000);
+    }
+  };
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,6 +129,22 @@ export default function AIChatSection() {
             </div>
             
             <form className={styles.chatInputArea} onSubmit={handleSend}>
+              <button 
+                type="button" 
+                className={styles.uploadBtn} 
+                aria-label="Upload document or image"
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload document or image"
+              >
+                📎
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                style={{ display: 'none' }} 
+                onChange={handleFileUpload}
+                accept="image/*,.pdf,.doc,.docx"
+              />
               <input 
                 type="text" 
                 className={styles.chatInput} 
