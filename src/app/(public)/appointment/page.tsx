@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePatientAuth } from '../../../context/PatientAuthContext';
 import styles from './appointment.module.css';
 
 const DUMMY_DOCTORS = [
@@ -12,6 +14,7 @@ const DUMMY_DOCTORS = [
 ];
 
 export default function AppointmentPage() {
+  const { patient } = usePatientAuth();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -21,6 +24,12 @@ export default function AppointmentPage() {
     time: '',
     symptoms: ''
   });
+
+  useEffect(() => {
+    if (patient) {
+      setFormData((prev) => ({ ...prev, name: patient.name, phone: patient.phone }));
+    }
+  }, [patient]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +63,11 @@ export default function AppointmentPage() {
           {/* Booking Form */}
           <div className={styles.formSection}>
             <h2 className={styles.sectionTitle}>Patient Information</h2>
+            {!patient && (
+              <p className={styles.guestBookingNote}>
+                Booking as a guest. <Link href="/login">Log in</Link> or <Link href="/register">create an account</Link> to have your details filled in automatically next time.
+              </p>
+            )}
             <form onSubmit={handleSubmit} className={styles.form}>
               
               <div className={styles.formGroup}>

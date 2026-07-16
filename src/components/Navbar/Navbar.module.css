@@ -60,6 +60,84 @@
 }
 
 .actions {
-  display: flex;
+  display: none;
   align-items: center;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .actions {
+    display: flex;
+  }
+}
+
+.menuBtn {
+  display: block;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+@media (min-width: 768px) {
+  .menuBtn {
+    display: none;
+  }
+}
+
+.mobileMenu {
+  border-top: 1px solid var(--border);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .mobileMenu {
+    display: none;
+  }
+}
+
+.mobileNavLinks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.mobileNavLinks a {
+  transition: color var(--transition-fast);
+}
+
+.mobileNavLinks a:hover {
+  color: var(--primary);
+}
+
+.mobileActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mobileActions .btn {
+  width: 100%;
+}
+
+.loginLink {
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.loginLink:hover {
+  color: var(--primary);
+}
+
+.greeting {
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
 }

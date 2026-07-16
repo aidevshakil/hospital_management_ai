@@ -1,0 +1,98 @@
+.page {
+  min-height: 100vh;
+  background-color: var(--background);
+  padding: var(--space-12) var(--space-4);
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: white;
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  height: fit-content;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: var(--space-2);
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 480px) {
+  .formRow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.formGroup label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.formGroup input {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  background-color: var(--background);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.formGroup input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+.error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+.footerNote {
+  text-align: center;
+  margin-top: var(--space-6);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.guestNote {
+  text-align: center;
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
