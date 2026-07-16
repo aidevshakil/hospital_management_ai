@@ -43,6 +43,15 @@ const EMPTY_FORM = {
   status: 'Pending' as Appointment['status'],
 };
 
+const DOCTORS_LIST = [
+  'Dr. John Doe',
+  'Dr. Jane Smith',
+  'Dr. Emily Chen',
+  'Dr. Michael Johnson',
+  'Dr. Sarah Williams',
+  'Dr. David Brown'
+];
+
 type ModalMode = 'new' | 'view' | 'edit' | null;
 
 export default function AdminAppointments() {
@@ -50,6 +59,7 @@ export default function AdminAppointments() {
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selected, setSelected] = useState<Appointment | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [showDoctorSuggestions, setShowDoctorSuggestions] = useState(false);
 
   function openNew() {
     setForm(EMPTY_FORM);
@@ -222,9 +232,41 @@ export default function AdminAppointments() {
               <label htmlFor="address">Address</label>
               <textarea id="address" name="address" rows={2} value={form.address} onChange={handleFormChange} required />
             </div>
-            <div className={styles.formGroup}>
+            <div className={styles.formGroup} style={{ position: 'relative' }}>
               <label htmlFor="doctor">Doctor</label>
-              <input id="doctor" name="doctor" value={form.doctor} onChange={handleFormChange} required />
+              <input 
+                id="doctor" 
+                name="doctor" 
+                value={form.doctor} 
+                onChange={(e) => {
+                  handleFormChange(e);
+                  setShowDoctorSuggestions(true);
+                }}
+                onFocus={() => setShowDoctorSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowDoctorSuggestions(false), 200)}
+                autoComplete="off"
+                required 
+              />
+              {showDoctorSuggestions && form.doctor && (
+                <ul className={styles.suggestionsList}>
+                  {DOCTORS_LIST.filter(doc => doc.toLowerCase().includes(form.doctor.toLowerCase())).length > 0 ? (
+                    DOCTORS_LIST.filter(doc => doc.toLowerCase().includes(form.doctor.toLowerCase())).map(doc => (
+                      <li 
+                        key={doc} 
+                        className={styles.suggestionItem}
+                        onClick={() => {
+                          setForm(prev => ({ ...prev, doctor: doc }));
+                          setShowDoctorSuggestions(false);
+                        }}
+                      >
+                        {doc}
+                      </li>
+                    ))
+                  ) : (
+                    <li className={styles.suggestionItem} style={{ color: 'var(--text-muted)', cursor: 'default' }}>No doctors found</li>
+                  )}
+                </ul>
+              )}
             </div>
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
