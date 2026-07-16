@@ -16,3 +16,22 @@
   padding: var(--space-8);
   overflow-y: auto;
 }
+
+.sidebarOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 90;
+}
+
+@media (min-width: 1025px) {
+  .sidebarOverlay {
+    display: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    padding: var(--space-4);
+  }
+}
