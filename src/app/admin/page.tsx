@@ -1,5 +1,42 @@
+'use client';
+
+import * as XLSX from 'xlsx';
 import StatCard from '../../components/Admin/StatCard';
 import styles from './adminPages.module.css';
+
+const STATS = [
+  { title: 'Total Patients', value: '1,248' },
+  { title: 'Appointments Today', value: '42' },
+  { title: 'Available Doctors', value: '18' },
+  { title: 'AI Consultations', value: '315' },
+];
+
+const RECENT_APPOINTMENTS = [
+  { patient: 'Sarah Jenkins', doctor: 'Dr. Emily Chen (Cardiology)', time: '09:00 AM', status: 'Confirmed' },
+  { patient: 'Michael Brown', doctor: 'Dr. James Wilson (Neurology)', time: '09:30 AM', status: 'Pending' },
+  { patient: 'Emma Davis', doctor: 'Dr. Sarah Johnson (Pediatrics)', time: '10:00 AM', status: 'Completed' },
+  { patient: 'William Taylor', doctor: 'Dr. Michael Lee (Orthopedics)', time: '10:45 AM', status: 'Cancelled' },
+];
+
+function downloadDashboardReport() {
+  const statsSheet = XLSX.utils.json_to_sheet(
+    STATS.map((s) => ({ Stat: s.title, Value: s.value }))
+  );
+  const appointmentsSheet = XLSX.utils.json_to_sheet(
+    RECENT_APPOINTMENTS.map((a) => ({
+      'Patient Name': a.patient,
+      Doctor: a.doctor,
+      Time: a.time,
+      Status: a.status,
+    }))
+  );
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, statsSheet, 'Overview');
+  XLSX.utils.book_append_sheet(workbook, appointmentsSheet, 'Recent Appointments');
+
+  XLSX.writeFile(workbook, `dashboard-report-${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
 
 export default function AdminDashboard() {
   return (
@@ -9,7 +46,7 @@ export default function AdminDashboard() {
           <h1 className={styles.pageTitle}>Dashboard Overview</h1>
           <p className={styles.pageDescription}>Welcome back! Here's what's happening at Hospital AI today.</p>
         </div>
-        <button className="btn btn-primary">Download Report</button>
+        <button className="btn btn-primary" onClick={downloadDashboardReport}>Download Report</button>
       </div>
 
       <div className={styles.statsGrid}>
