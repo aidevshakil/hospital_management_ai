@@ -1,78 +1,68 @@
-'use client';
-
-import * as XLSX from 'xlsx';
 import StatCard from '../../components/Admin/StatCard';
+import { prisma } from '@/lib/prisma';
+import { formatRelative } from '@/lib/format';
+import DownloadReportButton, { ReportStat, ReportAppointment } from './DownloadReportButton';
 import styles from './adminPages.module.css';
 
-const STATS = [
-  { title: 'Total Patients', value: '1,248' },
-  { title: 'Appointments Today', value: '42' },
-  { title: 'Available Doctors', value: '18' },
-  { title: 'AI Consultations', value: '315' },
-];
+const STATUS_LABEL: Record<string, string> = {
+  PENDING: 'Pending',
+  CONFIRMED: 'Confirmed',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+};
 
-const RECENT_APPOINTMENTS = [
-  { patient: 'Sarah Jenkins', doctor: 'Dr. Emily Chen (Cardiology)', time: '09:00 AM', status: 'Confirmed' },
-  { patient: 'Michael Brown', doctor: 'Dr. James Wilson (Neurology)', time: '09:30 AM', status: 'Pending' },
-  { patient: 'Emma Davis', doctor: 'Dr. Sarah Johnson (Pediatrics)', time: '10:00 AM', status: 'Completed' },
-  { patient: 'William Taylor', doctor: 'Dr. Michael Lee (Orthopedics)', time: '10:45 AM', status: 'Cancelled' },
-];
+const STATUS_BADGE: Record<string, string> = {
+  PENDING: styles.statusPending,
+  CONFIRMED: styles.statusConfirmed,
+  COMPLETED: styles.statusCompleted,
+  CANCELLED: styles.statusCancelled,
+};
 
-function downloadDashboardReport() {
-  const statsSheet = XLSX.utils.json_to_sheet(
-    STATS.map((s) => ({ Stat: s.title, Value: s.value }))
-  );
-  const appointmentsSheet = XLSX.utils.json_to_sheet(
-    RECENT_APPOINTMENTS.map((a) => ({
-      'Patient Name': a.patient,
-      Doctor: a.doctor,
-      Time: a.time,
-      Status: a.status,
-    }))
-  );
+export default async function AdminDashboard() {
+  const [totalPatients, totalAppointments, activeDoctors, totalDepartments, recent, activity] =
+    await Promise.all([
+      prisma.patient.count(),
+      prisma.appointment.count(),
+      prisma.doctor.count({ where: { status: 'ACTIVE' } }),
+      prisma.department.count(),
+      prisma.appointment.findMany({
+        orderBy: { date: 'desc' },
+        take: 5,
+        include: { doctor: { include: { department: true } } },
+      }),
+      prisma.notification.findMany({ orderBy: { createdAt: 'desc' }, take: 3 }),
+    ]);
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, statsSheet, 'Overview');
-  XLSX.utils.book_append_sheet(workbook, appointmentsSheet, 'Recent Appointments');
+  const stats: ReportStat[] = [
+    { title: 'Total Patients', value: String(totalPatients) },
+    { title: 'Total Appointments', value: String(totalAppointments) },
+    { title: 'Available Doctors', value: String(activeDoctors) },
+    { title: 'Departments', value: String(totalDepartments) },
+  ];
 
-  XLSX.writeFile(workbook, `dashboard-report-${new Date().toISOString().slice(0, 10)}.xlsx`);
-}
+  const now = new Date();
+  const recentForReport: ReportAppointment[] = recent.map((a) => ({
+    patient: a.patientName,
+    doctor: a.doctor ? `${a.doctor.name}${a.doctor.department ? ` (${a.doctor.department.name})` : ''}` : '—',
+    time: a.time ?? '—',
+    status: STATUS_LABEL[a.status] ?? a.status,
+  }));
 
-export default function AdminDashboard() {
   return (
     <div>
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Dashboard Overview</h1>
-          <p className={styles.pageDescription}>Welcome back! Here's what's happening at Hospital AI today.</p>
+          <p className={styles.pageDescription}>Welcome back! Here&apos;s what&apos;s happening at Hospital AI today.</p>
         </div>
-        <button className="btn btn-primary" onClick={downloadDashboardReport}>Download Report</button>
+        <DownloadReportButton stats={stats} appointments={recentForReport} />
       </div>
 
       <div className={styles.statsGrid}>
-        <StatCard 
-          title="Total Patients" 
-          value="1,248" 
-          icon="🧑‍🤝‍🧑" 
-          trend={{ value: '12%', isPositive: true }} 
-        />
-        <StatCard 
-          title="Appointments Today" 
-          value="42" 
-          icon="📅" 
-          trend={{ value: '5%', isPositive: true }} 
-        />
-        <StatCard 
-          title="Available Doctors" 
-          value="18" 
-          icon="👨‍⚕️" 
-        />
-        <StatCard 
-          title="AI Consultations" 
-          value="315" 
-          icon="🤖" 
-          trend={{ value: '24%', isPositive: true }} 
-        />
+        <StatCard title="Total Patients" value={totalPatients} icon="🧑‍🤝‍🧑" />
+        <StatCard title="Total Appointments" value={totalAppointments} icon="📅" />
+        <StatCard title="Available Doctors" value={activeDoctors} icon="👨‍⚕️" />
+        <StatCard title="Departments" value={totalDepartments} icon="🏥" />
       </div>
 
       <div className={styles.dashboardGrid}>
@@ -89,30 +79,30 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Sarah Jenkins</td>
-                  <td>Dr. Emily Chen (Cardiology)</td>
-                  <td>09:00 AM</td>
-                  <td><span className={`${styles.statusBadge} ${styles.statusConfirmed}`}>Confirmed</span></td>
-                </tr>
-                <tr>
-                  <td>Michael Brown</td>
-                  <td>Dr. James Wilson (Neurology)</td>
-                  <td>09:30 AM</td>
-                  <td><span className={`${styles.statusBadge} ${styles.statusPending}`}>Pending</span></td>
-                </tr>
-                <tr>
-                  <td>Emma Davis</td>
-                  <td>Dr. Sarah Johnson (Pediatrics)</td>
-                  <td>10:00 AM</td>
-                  <td><span className={`${styles.statusBadge} ${styles.statusCompleted}`}>Completed</span></td>
-                </tr>
-                <tr>
-                  <td>William Taylor</td>
-                  <td>Dr. Michael Lee (Orthopedics)</td>
-                  <td>10:45 AM</td>
-                  <td><span className={`${styles.statusBadge} ${styles.statusCancelled}`}>Cancelled</span></td>
-                </tr>
+                {recent.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                      No appointments yet.
+                    </td>
+                  </tr>
+                ) : (
+                  recent.map((a) => (
+                    <tr key={a.id}>
+                      <td>{a.patientName}</td>
+                      <td>
+                        {a.doctor
+                          ? `${a.doctor.name}${a.doctor.department ? ` (${a.doctor.department.name})` : ''}`
+                          : '—'}
+                      </td>
+                      <td>{a.time ?? '—'}</td>
+                      <td>
+                        <span className={`${styles.statusBadge} ${STATUS_BADGE[a.status] ?? ''}`}>
+                          {STATUS_LABEL[a.status] ?? a.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -121,27 +111,19 @@ export default function AdminDashboard() {
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>System Activity</h2>
           <div className={styles.activityFeed}>
-            <div className={styles.activityItem}>
-              <div className={styles.activityDot}></div>
-              <div className={styles.activityContent}>
-                <p><strong>Dr. Chen</strong> updated patient records.</p>
-                <span className={styles.activityTime}>10 mins ago</span>
-              </div>
-            </div>
-            <div className={styles.activityItem}>
-              <div className={styles.activityDot}></div>
-              <div className={styles.activityContent}>
-                <p>New appointment booked by <strong>Emma Davis</strong>.</p>
-                <span className={styles.activityTime}>25 mins ago</span>
-              </div>
-            </div>
-            <div className={styles.activityItem}>
-              <div className={styles.activityDot}></div>
-              <div className={styles.activityContent}>
-                <p>AI Assistant generated 15 symptom reports.</p>
-                <span className={styles.activityTime}>1 hour ago</span>
-              </div>
-            </div>
+            {activity.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)' }}>No recent activity.</p>
+            ) : (
+              activity.map((n) => (
+                <div key={n.id} className={styles.activityItem}>
+                  <div className={styles.activityDot}></div>
+                  <div className={styles.activityContent}>
+                    <p>{n.message}</p>
+                    <span className={styles.activityTime}>{formatRelative(n.createdAt, now)}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

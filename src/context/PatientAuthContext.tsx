@@ -1,56 +1,51 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import {
-  Patient,
-  RegisterInput,
-  getSession,
-  setSession,
-  clearSession,
-  findPatientByCredentials,
-  registerPatient,
-} from '../lib/patientAuth';
-
-interface AuthResult {
-  success: boolean;
-  error?: string;
-}
+import { createContext, useContext, useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import type { PublicPatient, RegisterInput, AuthResult } from '../lib/auth-types';
+import { registerPatient, loginPatient, logoutPatient } from '../app/(public)/auth-actions';
 
 interface PatientAuthContextValue {
-  patient: Patient | null;
-  login: (email: string, password: string) => AuthResult;
-  register: (input: RegisterInput) => AuthResult;
-  logout: () => void;
+  patient: PublicPatient | null;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  register: (input: RegisterInput) => Promise<AuthResult>;
+  logout: () => Promise<void>;
 }
 
 const PatientAuthContext = createContext<PatientAuthContextValue | undefined>(undefined);
 
-export function PatientAuthProvider({ children }: { children: ReactNode }) {
-  const [patient, setPatient] = useState<Patient | null>(null);
+export function PatientAuthProvider({
+  children,
+  initialPatient = null,
+}: {
+  children: ReactNode;
+  initialPatient?: PublicPatient | null;
+}) {
+  const router = useRouter();
+  const [patient, setPatient] = useState<PublicPatient | null>(initialPatient);
 
-  useEffect(() => {
-    setPatient(getSession());
-  }, []);
-
-  function login(email: string, password: string): AuthResult {
-    const found = findPatientByCredentials(email, password);
-    if (!found) return { success: false, error: 'Invalid email or password.' };
-    setSession(found);
-    setPatient(found);
-    return { success: true };
+  async function login(email: string, password: string): Promise<AuthResult> {
+    const result = await loginPatient(email, password);
+    if (result.success && result.patient) {
+      setPatient(result.patient);
+      router.refresh();
+    }
+    return result;
   }
 
-  function register(input: RegisterInput): AuthResult {
-    const result = registerPatient(input);
-    if (!result.success || !result.patient) return { success: false, error: result.error };
-    setSession(result.patient);
-    setPatient(result.patient);
-    return { success: true };
+  async function register(input: RegisterInput): Promise<AuthResult> {
+    const result = await registerPatient(input);
+    if (result.success && result.patient) {
+      setPatient(result.patient);
+      router.refresh();
+    }
+    return result;
   }
 
-  function logout() {
-    clearSession();
+  async function logout(): Promise<void> {
+    await logoutPatient();
     setPatient(null);
+    router.refresh();
   }
 
   return (

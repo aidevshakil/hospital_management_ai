@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
 import styles from './emergency.module.css';
 
 export const metadata = {
@@ -6,28 +6,11 @@ export const metadata = {
   description: '24/7 Emergency Care and Hotline',
 };
 
-const EMERGENCY_SERVICES = [
-  {
-    id: 1,
-    title: "24/7 Trauma Center",
-    icon: "🚑",
-    desc: "Fully equipped trauma care unit ready to handle critical injuries, accidents, and life-threatening conditions at any hour."
-  },
-  {
-    id: 2,
-    title: "Cardiac Emergency",
-    icon: "❤️‍🩹",
-    desc: "Specialized rapid-response team for heart attacks and severe chest pains, equipped with state-of-the-art defibrillation and catheterization labs."
-  },
-  {
-    id: 3,
-    title: "Stroke Unit",
-    icon: "🧠",
-    desc: "Immediate stroke intervention protocols to minimize brain damage, including rapid CT scans and clot-busting therapies."
-  }
-];
+export default async function EmergencyPage() {
+  const emergencyServices = await prisma.emergencyService.findMany({
+    orderBy: { sortOrder: 'asc' },
+  });
 
-export default function EmergencyPage() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -55,11 +38,11 @@ export default function EmergencyPage() {
         </div>
 
         <div className={styles.grid}>
-          {EMERGENCY_SERVICES.map(service => (
+          {emergencyServices.map(service => (
             <div key={service.id} className={styles.card}>
               <div className={styles.cardIcon}>{service.icon}</div>
               <h3>{service.title}</h3>
-              <p>{service.desc}</p>
+              <p>{service.description}</p>
             </div>
           ))}
         </div>

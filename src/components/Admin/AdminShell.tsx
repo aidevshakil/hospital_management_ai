@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import AdminSidebar from './AdminSidebar';
-import AdminHeader from './AdminHeader';
+import AdminHeader, { AdminInfo } from './AdminHeader';
 import styles from '../../app/admin/layout.module.css';
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({ children, admin }: { children: React.ReactNode; admin: AdminInfo }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
 
@@ -21,7 +21,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} />
       )}
       <div className={styles.mainWrapper}>
-        <AdminHeader onMenuClick={() => setSidebarOpen((prev) => !prev)} />
+        <AdminHeader onMenuClick={() => setSidebarOpen((prev) => !prev)} admin={admin} />
         <main className={styles.mainContent}>
           {children}
         </main>

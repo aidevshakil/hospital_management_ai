@@ -11,17 +11,21 @@ export default function LoginPage() {
   const { login } = usePatientAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
 
-    const result = login(form.email, form.password);
+    setSubmitting(true);
+    const result = await login(form.email, form.password);
+    setSubmitting(false);
+
     if (!result.success) {
       setError(result.error ?? 'Invalid email or password.');
       return;
@@ -49,8 +53,8 @@ export default function LoginPage() {
             <input id="password" name="password" type="password" value={form.password} onChange={handleChange} required />
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
-            Log In
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={submitting}>
+            {submitting ? 'Logging in…' : 'Log In'}
           </button>
         </form>
 

@@ -26,7 +26,9 @@ export default function RegisterPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
 
@@ -35,13 +37,15 @@ export default function RegisterPage() {
       return;
     }
 
-    const result = register({
+    setSubmitting(true);
+    const result = await register({
       name: form.name,
       email: form.email,
       phone: form.phone,
       address: form.address,
       password: form.password,
     });
+    setSubmitting(false);
 
     if (!result.success) {
       setError(result.error ?? 'Something went wrong. Please try again.');
@@ -91,8 +95,8 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
-            Create Account
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={submitting}>
+            {submitting ? 'Creating…' : 'Create Account'}
           </button>
         </form>
 
