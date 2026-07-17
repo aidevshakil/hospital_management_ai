@@ -45,7 +45,7 @@ export default function ServicesPage() {
             <h2>Not sure which service you need?</h2>
             <p>Describe your symptoms to our AI Chatbot and get instant recommendations.</p>
           </div>
-          <button className="btn btn-primary">Try AI Checker</button>
+          <Link href="/ai-checker" className="btn btn-primary">Try AI Checker</Link>
         </div>
       </div>
     </div>
