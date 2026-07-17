@@ -4,6 +4,12 @@ import { useState } from 'react';
 import Modal from '../../../components/Admin/Modal';
 import styles from '../adminPages.module.css';
 
+interface PatientDocument {
+  name: string;
+  type: 'pdf' | 'image' | 'doc';
+  uploadedAt: string;
+}
+
 interface Patient {
   id: string;
   name: string;
@@ -12,7 +18,14 @@ interface Patient {
   address: string;
   lastVisit: string;
   medicalHistory: string[];
+  documents: PatientDocument[];
 }
+
+const DOCUMENT_ICONS: Record<PatientDocument['type'], string> = {
+  pdf: '📄',
+  image: '🖼️',
+  doc: '📝',
+};
 
 const PATIENTS: Patient[] = [1, 2, 3, 4].map((item) => ({
   id: `#PAT-${5000 + item}`,
@@ -26,10 +39,16 @@ const PATIENTS: Patient[] = [1, 2, 3, 4].map((item) => ({
     'Seasonal allergies',
     'Appendectomy - 2015',
   ],
+  documents: [
+    { name: 'Blood Test Report.pdf', type: 'pdf', uploadedAt: 'Oct 8, 2023' },
+    { name: 'Chest X-Ray.jpg', type: 'image', uploadedAt: 'Oct 9, 2023' },
+    { name: 'Insurance Form.docx', type: 'doc', uploadedAt: 'Oct 10, 2023' },
+  ],
 }));
 
 export default function AdminPatients() {
   const [selected, setSelected] = useState<Patient | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<PatientDocument | null>(null);
 
   return (
     <div>
@@ -110,6 +129,57 @@ export default function AdminPatients() {
                 'No recorded history'
               )}
             </span>
+          </div>
+          <div className={styles.detailRow} style={{ alignItems: 'flex-start' }}>
+            <span className={styles.detailLabel}>Uploaded Documents</span>
+            <span className={styles.detailValue}>
+              {selected.documents.length > 0 ? (
+                <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
+                  {selected.documents.map((doc, i) => (
+                    <li
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.75rem',
+                        padding: '0.4rem 0',
+                      }}
+                    >
+                      <span>
+                        {DOCUMENT_ICONS[doc.type]} {doc.name}{' '}
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                          ({doc.uploadedAt})
+                        </span>
+                      </span>
+                      <button
+                        className="btn btn-outline"
+                        style={{ padding: '2px 10px', fontSize: '0.75rem' }}
+                        onClick={() => setPreviewDoc(doc)}
+                      >
+                        View
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                'No documents uploaded'
+              )}
+            </span>
+          </div>
+        </Modal>
+      )}
+
+      {previewDoc && (
+        <Modal title={previewDoc.name} onClose={() => setPreviewDoc(null)}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ padding: '2rem 0', fontSize: '3rem' }}>
+              {DOCUMENT_ICONS[previewDoc.type]}
+            </div>
+            <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>
+              Uploaded on {previewDoc.uploadedAt}. This is demo data — no file storage is
+              connected yet, so a real document preview isn&apos;t available.
+            </p>
           </div>
         </Modal>
       )}
