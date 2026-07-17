@@ -144,9 +144,9 @@ export default function AppointmentPage() {
             <div className={styles.aiIcon}>✨</div>
             <h3>Not sure which doctor to see?</h3>
             <p>Describe your symptoms to our AI Chatbot and it will suggest the best department and specialist for your needs.</p>
-            <button className="btn btn-secondary" style={{ width: '100%' }}>
+            <Link href="/ai-checker" className="btn btn-secondary" style={{ width: '100%', display: 'block', textAlign: 'center' }}>
               Try AI Symptom Checker
-            </button>
+            </Link>
             
             <div className={styles.aiFeatures}>
               <ul>
