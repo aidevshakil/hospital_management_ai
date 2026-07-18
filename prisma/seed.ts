@@ -7,7 +7,9 @@
  *
  * Run with:  npx prisma db seed
  */
-import 'dotenv/config';
+import { config as loadEnv } from 'dotenv';
+// Load the single shared .env at the repo root (cwd is this package dir).
+loadEnv({ path: '../.env' });
 import { PrismaClient, DoctorStatus, DocumentType, AppointmentStatus, AdminRole, NotificationType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
