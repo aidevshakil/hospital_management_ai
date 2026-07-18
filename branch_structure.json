@@ -1,0 +1,21 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "admin_pannel",
+    "main",
+    "origin",
+    "user_frontend"
+  ],
+  "parent": {
+    "admin_pannel": "main",
+    "main": null,
+    "origin": "main",
+    "user_frontend": "main"
+  },
+  "order": [
+    "main",
+    "admin_pannel",
+    "origin",
+    "user_frontend"
+  ]
+}
