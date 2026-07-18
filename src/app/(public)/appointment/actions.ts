@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getSessionPatientId } from '@/lib/session';
 import { sendAppointmentConfirmation } from '@/lib/emails';
+import { appointmentCode } from '@/lib/codes';
+import { rateLimit, clientIp } from '@/lib/rate-limit';
+import { checkSlotConflict } from '@/lib/scheduling';
 import type { AppointmentTimeSlot } from '@prisma/client';
 
 export interface BookingInput {
@@ -36,6 +39,11 @@ export async function createAppointment(input: BookingInput): Promise<BookingRes
   const email = input.email?.trim().toLowerCase();
   const phone = input.phone?.trim();
 
+  const ip = await clientIp();
+  if (!rateLimit(`booking:${ip}`, 8, 60 * 60 * 1000).ok) {
+    return { ok: false, error: 'Too many booking attempts. Please try again later.' };
+  }
+
   if (!name || !email || !phone || !input.date || !input.time) {
     return { ok: false, error: 'Please fill in your name, email, phone, date, and time.' };
   }
@@ -59,16 +67,18 @@ export async function createAppointment(input: BookingInput): Promise<BookingRes
     doctor = await prisma.doctor.findUnique({ where: { id: input.doctorId }, include: { department: true } });
   }
 
+  // Reject bookings that clash with the doctor's availability or an existing slot.
+  const conflict = await checkSlotConflict(doctor?.id ?? null, date, slot ?? null);
+  if (!conflict.ok) {
+    return { ok: false, error: conflict.error };
+  }
+
   // Link to the signed-in patient, if any (guest bookings stay unlinked).
   const patientId = await getSessionPatientId();
 
-  // Human-readable code based on current count.
-  const count = await prisma.appointment.count();
-  const code = `#APT-${1000 + count + 1}`;
-
-  const appointment = await prisma.appointment.create({
+  // Create first (assigns race-free `seq`), then derive the human-readable code.
+  const created = await prisma.appointment.create({
     data: {
-      code,
       date,
       slot,
       symptoms: input.symptoms?.trim() || null,
@@ -80,6 +90,11 @@ export async function createAppointment(input: BookingInput): Promise<BookingRes
       doctorId: doctor?.id ?? null,
       departmentId: doctor?.departmentId ?? department?.id ?? null,
     },
+  });
+  const code = appointmentCode(created.seq);
+  const appointment = await prisma.appointment.update({
+    where: { id: created.id },
+    data: { code },
   });
 
   // Send a confirmation email (never blocks / fails the booking).

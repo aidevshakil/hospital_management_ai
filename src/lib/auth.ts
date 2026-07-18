@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { prisma } from '@/lib/prisma';
-import { getSessionPatientId, getSessionAdminId } from '@/lib/session';
+import { getSessionPatientId, getSessionAdminId, getSessionDoctorId } from '@/lib/session';
 import type { PublicPatient } from '@/lib/auth-types';
 
 /** Return the currently signed-in patient (without the password hash), or null. */
@@ -37,4 +37,27 @@ export async function getCurrentAdmin(): Promise<PublicAdmin | null> {
   if (!admin) return null;
 
   return { id: admin.id, name: admin.name, email: admin.email, role: admin.role };
+}
+
+export interface PublicDoctor {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+}
+
+/** Return the currently signed-in doctor, or null. */
+export async function getCurrentDoctor(): Promise<PublicDoctor | null> {
+  const id = await getSessionDoctorId();
+  if (!id) return null;
+
+  const doctor = await prisma.doctor.findUnique({ where: { id }, include: { department: true } });
+  if (!doctor) return null;
+
+  return {
+    id: doctor.id,
+    name: doctor.name,
+    email: doctor.email ?? '',
+    department: doctor.department?.name ?? 'General',
+  };
 }

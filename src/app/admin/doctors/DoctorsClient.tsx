@@ -9,6 +9,7 @@ export interface DoctorRow {
   dbId: string;
   id: string; // display code
   name: string;
+  email: string;
   specialty: string;
   experience: string;
   education: string;
@@ -33,6 +34,8 @@ export default function DoctorsClient({
 }) {
   const emptyForm = {
     name: '',
+    email: '',
+    password: '',
     specialty: specialties[0] ?? '',
     experience: '',
     education: '',
@@ -56,6 +59,8 @@ export default function DoctorsClient({
     setSelected(doctor);
     setForm({
       name: doctor.name,
+      email: doctor.email === '—' ? '' : doctor.email,
+      password: '',
       specialty: doctor.specialty,
       experience: doctor.experience === '—' ? '' : doctor.experience,
       education: doctor.education === '—' ? '' : doctor.education,
@@ -194,6 +199,29 @@ export default function DoctorsClient({
                 <input id="available" name="available" placeholder="e.g. Mon, Wed, Fri" value={form.available} onChange={handleFormChange} required />
               </div>
             </div>
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label htmlFor="email">Login Email</label>
+                <input id="email" name="email" type="email" placeholder="doctor@hospital.com" value={form.email} onChange={handleFormChange} />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="password">
+                  {modalMode === 'edit' ? 'New Password' : 'Portal Password'}
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder={modalMode === 'edit' ? 'Leave blank to keep current' : 'Set to enable portal login'}
+                  value={form.password}
+                  onChange={handleFormChange}
+                />
+              </div>
+            </div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '-0.25rem' }}>
+              Set an email and password to give this doctor access to the doctor portal (/doctor).
+            </p>
+
             <div className={styles.formGroup}>
               <label htmlFor="status">Status</label>
               <select id="status" name="status" value={form.status} onChange={handleFormChange}>

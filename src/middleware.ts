@@ -1,22 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Protects /admin/* — everything except /admin/login requires a valid admin
- * session cookie. Verification mirrors src/lib/session.ts: hex HMAC-SHA256 over
- * `admin:<id>`, done here with Web Crypto because middleware runs on the Edge
- * runtime (no node:crypto).
+ * Route protection for the three signed-in areas:
+ *   /admin/*   → admin session   (except /admin/login)
+ *   /doctor/*  → doctor session  (except /doctor/login)
+ *   /profile/* → patient session
  *
- * This gate is signature-only; the admin layout additionally calls
- * getCurrentAdmin() (which confirms the id exists in the Admin table).
+ * Verification mirrors src/lib/session.ts: hex HMAC-SHA256 over `<purpose>:<id>`,
+ * done here with Web Crypto because middleware runs on the Edge runtime (no
+ * node:crypto). Binding the purpose into the signature means one area's cookie
+ * can never be replayed against another.
+ *
+ * This gate is signature-only; each area's server code additionally confirms the
+ * id still exists (getCurrentAdmin / getCurrentDoctor / getSessionPatientId).
  */
 
-const ADMIN_COOKIE = 'hma_admin_session';
+type Purpose = 'admin' | 'doctor' | 'patient';
+
+const COOKIE: Record<Purpose, string> = {
+  admin: 'hma_admin_session',
+  doctor: 'hma_doctor_session',
+  patient: 'hma_session',
+};
+
+const LOGIN_PATH: Record<Purpose, string> = {
+  admin: '/admin/login',
+  doctor: '/doctor/login',
+  patient: '/login',
+};
 
 function hex(buffer: ArrayBuffer): string {
   return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function isValidAdminToken(token: string | undefined, secret: string): Promise<boolean> {
+async function isValidToken(
+  token: string | undefined,
+  secret: string,
+  purpose: Purpose,
+): Promise<boolean> {
   if (!token) return false;
   const idx = token.lastIndexOf('.');
   if (idx <= 0) return false;
@@ -29,13 +50,12 @@ async function isValidAdminToken(token: string | undefined, secret: string): Pro
     enc.encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
-    ['sign']
+    ['sign'],
   );
-  const mac = await crypto.subtle.sign('HMAC', key, enc.encode(`admin:${id}`));
+  const mac = await crypto.subtle.sign('HMAC', key, enc.encode(`${purpose}:${id}`));
   const expectedSig = hex(mac);
 
   if (providedSig.length !== expectedSig.length) return false;
-  // Constant-time-ish comparison.
   let diff = 0;
   for (let i = 0; i < expectedSig.length; i++) {
     diff |= providedSig.charCodeAt(i) ^ expectedSig.charCodeAt(i);
@@ -43,19 +63,28 @@ async function isValidAdminToken(token: string | undefined, secret: string): Pro
   return diff === 0;
 }
 
+function purposeFor(pathname: string): Purpose | null {
+  if (pathname.startsWith('/admin')) return 'admin';
+  if (pathname.startsWith('/doctor')) return 'doctor';
+  if (pathname.startsWith('/profile')) return 'patient';
+  return null;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const purpose = purposeFor(pathname);
+  if (!purpose) return NextResponse.next();
 
-  // The login page must stay reachable without a session.
-  if (pathname === '/admin/login') {
+  // Login pages must stay reachable without a session.
+  if (pathname === LOGIN_PATH[purpose]) {
     return NextResponse.next();
   }
 
   const secret = process.env.SESSION_SECRET;
-  const token = request.cookies.get(ADMIN_COOKIE)?.value;
+  const token = request.cookies.get(COOKIE[purpose])?.value;
 
-  if (!secret || !(await isValidAdminToken(token, secret))) {
-    const loginUrl = new URL('/admin/login', request.url);
+  if (!secret || !(await isValidToken(token, secret, purpose))) {
+    const loginUrl = new URL(LOGIN_PATH[purpose], request.url);
     loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -64,5 +93,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/doctor/:path*', '/profile/:path*'],
 };

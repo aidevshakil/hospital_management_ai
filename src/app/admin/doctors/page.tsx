@@ -11,6 +11,7 @@ export default async function AdminDoctors() {
     dbId: d.id,
     id: d.code ?? d.id,
     name: d.name,
+    email: d.email ?? '—',
     specialty: d.department?.name ?? '—',
     experience: d.experience ?? '—',
     education: d.education ?? '—',

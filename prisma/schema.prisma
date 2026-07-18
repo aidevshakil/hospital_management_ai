@@ -93,9 +93,11 @@ model EmergencyService {
 
 model Doctor {
   id            String       @id @default(cuid())
+  seq           Int          @unique @default(autoincrement()) // monotonic counter backing `code` (race-free)
   code          String?      @unique // human-readable display id, e.g. "#DOC-1001"
   name          String // e.g. "Dr. Sarah Jenkins"
   email         String?      @unique
+  password      String? // bcrypt hash for the doctor portal; null = login disabled
   phone         String?
   experience    String? // e.g. "15 Years"
   education     String? // e.g. "MD, FACC"
@@ -122,6 +124,7 @@ model Doctor {
 
 model Patient {
   id        String    @id @default(cuid())
+  seq       Int       @unique @default(autoincrement()) // monotonic counter backing `code` (race-free)
   code      String?   @unique // human-readable display id, e.g. "#PAT-5001"
   name      String
   email     String    @unique
@@ -173,6 +176,7 @@ model PatientDocument {
 
 model Appointment {
   id       String               @id @default(cuid())
+  seq      Int                  @unique @default(autoincrement()) // monotonic counter backing `code` (race-free)
   code     String?              @unique // human-readable display id, e.g. "#APT-1001"
   date     DateTime // appointment date
   time     String? // exact time label, e.g. "09:00 AM"

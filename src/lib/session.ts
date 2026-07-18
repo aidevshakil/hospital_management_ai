@@ -15,11 +15,12 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { createHmac, timingSafeEqual } from 'crypto';
 
-type Purpose = 'patient' | 'admin';
+type Purpose = 'patient' | 'admin' | 'doctor';
 
 const COOKIE_NAME: Record<Purpose, string> = {
   patient: 'hma_session',
   admin: 'hma_admin_session',
+  doctor: 'hma_doctor_session',
 };
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
@@ -80,3 +81,8 @@ export const clearSessionCookie = () => clearCookie('patient');
 export const getSessionAdminId = () => getId('admin');
 export const setAdminSessionCookie = (id: string) => setCookie('admin', id);
 export const clearAdminSessionCookie = () => clearCookie('admin');
+
+// Doctor session
+export const getSessionDoctorId = () => getId('doctor');
+export const setDoctorSessionCookie = (id: string) => setCookie('doctor', id);
+export const clearDoctorSessionCookie = () => clearCookie('doctor');

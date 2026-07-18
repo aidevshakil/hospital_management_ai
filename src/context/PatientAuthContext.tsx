@@ -45,6 +45,7 @@ export function PatientAuthProvider({
   async function logout(): Promise<void> {
     await logoutPatient();
     setPatient(null);
+    router.push('/');
     router.refresh();
   }
 

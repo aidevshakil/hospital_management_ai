@@ -1,0 +1,236 @@
+.shell {
+  min-height: 100vh;
+  background: var(--background);
+}
+
+/* ---- Header ---- */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.headerInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.brand span {
+  color: var(--primary);
+}
+
+.brandTag {
+  color: var(--text-muted) !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.whoName {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.whoDept {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.main {
+  padding: var(--space-8) 0 var(--space-16);
+}
+
+/* ---- Page ---- */
+.pageTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: var(--space-6);
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .statsRow {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.statCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.statValue {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ---- Sections ---- */
+.section {
+  margin-bottom: var(--space-8);
+}
+
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: rgba(2, 132, 199, 0.1);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-2);
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.apptList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.apptItem {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.apptMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.apptTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.apptPatient {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.apptCode {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.apptMeta {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+.apptSymptoms {
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
+
+.apptActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.apptActions .btn {
+  padding: var(--space-2) var(--space-4);
+  font-size: 0.85rem;
+}
+
+.inlineError {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: var(--space-2);
+}
+
+/* ---- Status badge ---- */
+.status {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.statusPending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.statusConfirmed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.statusCompleted {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusCancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}

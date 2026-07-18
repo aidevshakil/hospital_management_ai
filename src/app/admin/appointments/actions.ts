@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { sendAppointmentConfirmation } from '@/lib/emails';
+import { appointmentCode } from '@/lib/codes';
 import type { AppointmentStatus } from '@prisma/client';
 
 export interface AppointmentFormInput {
@@ -32,15 +33,12 @@ export async function createAppointment(input: AppointmentFormInput) {
   const doctor = doctorId
     ? await prisma.doctor.findUnique({ where: { id: doctorId } })
     : null;
-  const count = await prisma.appointment.count();
 
-  const code = `#APT-${1000 + count + 1}`;
   const date = new Date(input.date);
   const email = input.email?.trim() || null;
 
-  await prisma.appointment.create({
+  const created = await prisma.appointment.create({
     data: {
-      code,
       date,
       time: input.time || null,
       status: toStatus(input.status),
@@ -52,6 +50,8 @@ export async function createAppointment(input: AppointmentFormInput) {
       departmentId: doctor?.departmentId ?? null,
     },
   });
+  const code = appointmentCode(created.seq);
+  await prisma.appointment.update({ where: { id: created.id }, data: { code } });
 
   if (email) {
     const department = doctor?.departmentId
