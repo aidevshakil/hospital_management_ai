@@ -1,0 +1,245 @@
+// Prisma schema for Hospital Management AI
+// Database: PostgreSQL
+// Docs: https://pris.ly/d/prisma-schema
+//
+// The connection string is provided via DATABASE_URL and wired through
+// prisma.config.ts (Prisma 7 reads the datasource url from there).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum AppointmentTimeSlot {
+  MORNING // 9:00 AM - 12:00 PM
+  AFTERNOON // 1:00 PM - 4:00 PM
+  EVENING // 5:00 PM - 8:00 PM
+}
+
+enum DoctorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DocumentType {
+  PDF
+  IMAGE
+  DOC
+}
+
+enum AdminRole {
+  SUPERADMIN
+  ADMIN
+  STAFF
+}
+
+enum NotificationType {
+  APPOINTMENT
+  PATIENT
+  DOCTOR
+  SYSTEM
+}
+
+// ---------------------------------------------------------------------------
+// Departments & Services
+// ---------------------------------------------------------------------------
+
+/// A medical department / specialty (e.g. Cardiology, General Medicine).
+/// Backs both the public "Services" page and the doctor specialty taxonomy.
+model Department {
+  id            String   @id @default(cuid())
+  name          String   @unique // e.g. "Cardiology"
+  slug          String   @unique // e.g. "cardiology"
+  icon          String? // emoji shown on the services card, e.g. "❤️"
+  description   String?
+  isSpecialized Boolean  @default(false) // false = general dept, true = specialized
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  doctors      Doctor[]
+  appointments Appointment[]
+
+  @@index([slug])
+}
+
+/// Emergency service cards shown on the public Emergency page.
+model EmergencyService {
+  id          String   @id @default(cuid())
+  title       String // e.g. "24/7 Trauma Center"
+  icon        String? // emoji
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Doctors
+// ---------------------------------------------------------------------------
+
+model Doctor {
+  id            String       @id @default(cuid())
+  seq           Int          @unique @default(autoincrement()) // monotonic counter backing `code` (race-free)
+  code          String?      @unique // human-readable display id, e.g. "#DOC-1001"
+  name          String // e.g. "Dr. Sarah Jenkins"
+  email         String?      @unique
+  password      String? // bcrypt hash for the doctor portal; null = login disabled
+  phone         String?
+  experience    String? // e.g. "15 Years"
+  education     String? // e.g. "MD, FACC"
+  availableDays String? // e.g. "Mon, Wed, Fri"
+  visitingHours String? // e.g. "10:00 AM - 1:00 PM"
+  chamber       String? // room / chamber number
+  bio           String?
+  image         String? // URL or base64 data URL
+  status        DoctorStatus @default(ACTIVE)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  appointments Appointment[]
+
+  @@index([departmentId])
+}
+
+// ---------------------------------------------------------------------------
+// Patients
+// ---------------------------------------------------------------------------
+
+model Patient {
+  id        String    @id @default(cuid())
+  seq       Int       @unique @default(autoincrement()) // monotonic counter backing `code` (race-free)
+  code      String?   @unique // human-readable display id, e.g. "#PAT-5001"
+  name      String
+  email     String    @unique
+  phone     String?
+  address   String?
+  password  String // bcrypt/argon2 hash (never plaintext)
+  lastVisit DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  appointments   Appointment[]
+  documents      PatientDocument[]
+  medicalHistory MedicalHistoryEntry[]
+
+  @@index([email])
+}
+
+/// A single medical-history line item for a patient
+/// (replaces the mock `medicalHistory: string[]`).
+model MedicalHistoryEntry {
+  id          String   @id @default(cuid())
+  description String // e.g. "Hypertension - diagnosed 2019"
+  recordedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+}
+
+/// An uploaded document belonging to a patient (report, scan, form).
+model PatientDocument {
+  id         String       @id @default(cuid())
+  name       String // e.g. "Blood Test Report.pdf"
+  type       DocumentType
+  url        String? // storage location once file storage is connected
+  uploadedAt DateTime     @default(now())
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+}
+
+// ---------------------------------------------------------------------------
+// Appointments
+// ---------------------------------------------------------------------------
+
+model Appointment {
+  id       String               @id @default(cuid())
+  seq      Int                  @unique @default(autoincrement()) // monotonic counter backing `code` (race-free)
+  code     String?              @unique // human-readable display id, e.g. "#APT-1001"
+  date     DateTime // appointment date
+  time     String? // exact time label, e.g. "09:00 AM"
+  slot     AppointmentTimeSlot? // booking-form slot (morning/afternoon/evening)
+  symptoms String? // free-text symptom description from the booking form
+  status   AppointmentStatus    @default(PENDING)
+
+  // Denormalized contact details (guest bookings need no account).
+  patientName    String
+  patientEmail   String? // used to send confirmation + reminder emails
+  patientPhone   String?
+  patientAddress String?
+
+  reminderSentAt DateTime? // set once a reminder email has been sent
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Optional relations — guest bookings may not resolve to a stored record yet.
+  patientId    String?
+  patient      Patient?    @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  doctorId     String?
+  doctor       Doctor?     @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  notifications Notification[]
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([departmentId])
+  @@index([date])
+}
+
+// ---------------------------------------------------------------------------
+// Admin & Notifications
+// ---------------------------------------------------------------------------
+
+model Admin {
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  phone       String?
+  password    String // hashed
+  role        AdminRole @default(SUPERADMIN)
+  emailAlerts Boolean   @default(true)
+  smsAlerts   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Notification {
+  id        String            @id @default(cuid())
+  code      String?           @unique // e.g. "#NTF-1"
+  message   String
+  type      NotificationType?
+  read      Boolean           @default(false)
+  createdAt DateTime          @default(now())
+
+  // Optional link back to the entity that triggered the notification.
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([read])
+  @@index([appointmentId])
+}

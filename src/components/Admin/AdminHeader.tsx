@@ -5,17 +5,31 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './Admin.module.css';
 import { searchAdminIndex } from '../../lib/adminSearchData';
+import { logoutAdmin } from '../../app/admin/auth-actions';
+
+export interface AdminInfo {
+  name: string;
+  email: string;
+  role: string;
+}
 
 interface AdminHeaderProps {
   onMenuClick: () => void;
+  admin: AdminInfo;
 }
 
-export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
+export default function AdminHeader({ onMenuClick, admin }: AdminHeaderProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
 
   const results = searchAdminIndex(query);
+
+  async function handleLogout() {
+    await logoutAdmin();
+    router.replace('/admin/login');
+    router.refresh();
+  }
 
   function goTo(path: string) {
     router.push(path);
@@ -84,12 +98,21 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
           <span className={styles.badge}>3</span>
         </Link>
         <Link href="/admin/settings" className={styles.profile}>
-          <div className={styles.avatar}>A</div>
+          <div className={styles.avatar}>{admin.name.charAt(0).toUpperCase()}</div>
           <div className={styles.profileInfo}>
-            <span className={styles.profileName}>Admin User</span>
-            <span className={styles.profileRole}>Superadmin</span>
+            <span className={styles.profileName}>{admin.name}</span>
+            <span className={styles.profileRole}>
+              {admin.role.charAt(0) + admin.role.slice(1).toLowerCase()}
+            </span>
           </div>
         </Link>
+        <button
+          className="btn btn-outline"
+          style={{ padding: '6px 14px', fontSize: '0.85rem' }}
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
       </div>
     </header>
   );

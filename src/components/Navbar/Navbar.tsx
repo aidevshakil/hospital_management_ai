@@ -35,7 +35,7 @@ export default function Navbar() {
         <div className={styles.actions}>
           {patient ? (
             <>
-              <span className={styles.greeting}>Hi, {patient.name.split(' ')[0]}</span>
+              <Link href="/profile" className={styles.greeting}>Hi, {patient.name.split(' ')[0]}</Link>
               <button className="btn btn-outline" onClick={logout}>Logout</button>
             </>
           ) : (
@@ -71,7 +71,7 @@ export default function Navbar() {
           <div className={styles.mobileActions}>
             {patient ? (
               <>
-                <span className={styles.greeting}>Hi, {patient.name.split(' ')[0]}</span>
+                <Link href="/profile" className="btn btn-outline">My Profile</Link>
                 <button className="btn btn-outline" onClick={logout}>Logout</button>
               </>
             ) : (
