@@ -8,15 +8,15 @@
  * Run with:  npx prisma db seed
  */
 import { config as loadEnv } from 'dotenv';
-// Load the single shared .env at the repo root (cwd is this package dir).
-loadEnv({ path: '../.env' });
+// Load the shared .env (cwd is this package dir when `prisma db seed` runs).
+loadEnv({ path: ['.env.local', '.env', '../.env'] });
 import { PrismaClient, DoctorStatus, DocumentType, AppointmentStatus, AdminRole, NotificationType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
-  throw new Error('DATABASE_URL is not set. Add it to backend/.env');
+  throw new Error('DATABASE_URL is not set. Add it to .env at the project root.');
 }
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
