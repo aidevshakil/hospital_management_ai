@@ -1,68 +1,113 @@
 'use client';
 
-import { useState, useRef } from 'react';
+// React 19 replaced the old `FormEvent` with `SubmitEvent` for onSubmit; import
+// it explicitly so we get React's synthetic event, not the DOM global.
+import { useState, useRef, useEffect, type SubmitEvent } from 'react';
 import Link from 'next/link';
 import styles from './AIChatSection.module.css';
 
-export default function AIChatSection() {
-  const [messages, setMessages] = useState([
-    { role: 'ai', text: 'Hello! I am your AI Health Assistant. How can I help you today? You can describe your symptoms or ask me to book an appointment.' }
-  ]);
-  const [inputValue, setInputValue] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+const GREETING =
+  'Hello! I am your AI Health Assistant. Describe what you are experiencing and I will point you to the right department and doctor.';
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const newMessages = [...messages, { role: 'user', text: `Uploaded document: ${file.name}` }];
-      setMessages(newMessages);
-      
-      setTimeout(() => {
-        setMessages(prev => [
-          ...prev, 
-          { 
-            role: 'ai', 
-            text: `I've analyzed your document (${file.name}). Based on the information, I recommend consulting a specialist.` 
-          },
-          {
-            role: 'action',
-            text: ''
-          }
-        ]);
-      }, 1000);
-    }
+/**
+ * The assistant ends a recommendation with `[BOOK:<doctorId>|<name>]` on its own
+ * line (see the system prompt in src/lib/hospital-context.ts). We strip that
+ * marker out of the visible text and render it as a booking button instead.
+ *
+ * Deliberately forgiving: open-weight models routinely wrap the marker in
+ * backticks or bold, and pad the delimiters with spaces. Those variants should
+ * still produce a button rather than leaking raw syntax into the chat bubble.
+ */
+const BOOKING_MARKER = /[`*_]*\[BOOK:\s*([^|\]]+?)\s*\|\s*([^\]]+?)\s*\][`*_]*/;
+
+type Booking = { doctorId: string; doctorName: string };
+
+type Message = {
+  role: 'user' | 'assistant';
+  /** Display text, with any booking marker already stripped. */
+  text: string;
+  booking?: Booking;
+};
+
+function parseBooking(raw: string): { text: string; booking?: Booking } {
+  const match = raw.match(BOOKING_MARKER);
+  if (!match) return { text: raw.trim() };
+
+  return {
+    text: raw.replace(BOOKING_MARKER, '').trim(),
+    booking: { doctorId: match[1].trim(), doctorName: match[2].trim() },
   };
+}
 
-  const handleSend = (e: React.FormEvent) => {
+export default function AIChatSection() {
+  const [messages, setMessages] = useState<Message[]>([{ role: 'assistant', text: GREETING }]);
+  const [inputValue, setInputValue] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const chatBodyRef = useRef<HTMLDivElement>(null);
+
+  // Keep the newest message in view as tokens stream in.
+  useEffect(() => {
+    const body = chatBodyRef.current;
+    if (body) body.scrollTop = body.scrollHeight;
+  }, [messages]);
+
+  const handleSend = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    const question = inputValue.trim();
+    if (!question || isStreaming) return;
 
-    // Add user message
-    const newMessages = [...messages, { role: 'user', text: inputValue }];
-    setMessages(newMessages);
+    // The greeting is UI-only — the API expects the conversation to open with a
+    // user turn, so it never goes over the wire.
+    const history = messages
+      .slice(1)
+      .map(({ role, text }) => ({ role, content: text }))
+      .concat({ role: 'user' as const, content: question });
+
+    setMessages((prev) => [...prev, { role: 'user', text: question }, { role: 'assistant', text: '' }]);
     setInputValue('');
+    setIsStreaming(true);
 
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev, 
-        { 
-          role: 'ai', 
-          text: "Based on what you've described, I recommend consulting a specialist. I can help you book an appointment right now." 
-        },
-        {
-          role: 'action',
-          text: '' // This renders the action button
-        }
-      ]);
-    }, 1000);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history }),
+      });
+
+      if (!response.ok || !response.body) {
+        const { error } = await response.json().catch(() => ({ error: null }));
+        throw new Error(error ?? 'The assistant is unavailable right now.');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let raw = '';
+
+      // Replace the trailing placeholder bubble with each new chunk.
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        raw += decoder.decode(value, { stream: true });
+
+        const { text, booking } = parseBooking(raw);
+        setMessages((prev) => [...prev.slice(0, -1), { role: 'assistant', text, booking }]);
+      }
+    } catch (error) {
+      const text =
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong. Please try again, or call the hospital if it is urgent.';
+      setMessages((prev) => [...prev.slice(0, -1), { role: 'assistant', text }]);
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   return (
     <section className={styles.chatSection}>
       <div className={styles.decorativeBlob1}></div>
       <div className={styles.decorativeBlob2}></div>
-      
+
       <div className={`container ${styles.container}`}>
         <div className={styles.textContent}>
           <span className={styles.badge}>
@@ -75,7 +120,7 @@ export default function AIChatSection() {
           <p className={styles.description}>
             Not feeling well? Describe your symptoms to our intelligent AI assistant. It provides instant recommendations and can seamlessly book an appointment with the right specialist for your condition.
           </p>
-          
+
           <div className={styles.features}>
             <div className={styles.featureItem}>
               <span className={styles.featureIcon}>⚡</span>
@@ -90,7 +135,7 @@ export default function AIChatSection() {
               <span>Direct booking integration</span>
             </div>
           </div>
-          
+
           <div className={styles.actions}>
             <Link href="/appointment" className="btn btn-primary">
               Book Appointment Now
@@ -104,55 +149,50 @@ export default function AIChatSection() {
               <div className={styles.aiAvatar}>🤖</div>
               <div className={styles.aiInfo}>
                 <h3>AI Health Assistant</h3>
-                <p>Online • Replies instantly</p>
+                <p>{isStreaming ? 'Typing…' : 'Online • Replies instantly'}</p>
               </div>
             </div>
-            
-            <div className={styles.chatBody}>
-              {messages.map((msg, idx) => {
-                if (msg.role === 'action') {
-                  return (
-                    <div key={idx} style={{ alignSelf: 'flex-start' }}>
-                      <Link href="/appointment" className={styles.chatAction}>
-                        Book Appointment →
+
+            <div className={styles.chatBody} ref={chatBodyRef}>
+              {messages.map((msg, idx) => (
+                <div key={idx}>
+                  <div
+                    className={`${styles.message} ${
+                      msg.role === 'user' ? styles.userMessage : styles.aiMessage
+                    }`}
+                  >
+                    {msg.text || (isStreaming ? '…' : '')}
+                  </div>
+
+                  {msg.booking && (
+                    <div style={{ alignSelf: 'flex-start' }}>
+                      <Link
+                        href={`/appointment?doctor=${encodeURIComponent(msg.booking.doctorId)}`}
+                        className={styles.chatAction}
+                      >
+                        Book with {msg.booking.doctorName} →
                       </Link>
                     </div>
-                  );
-                }
-                
-                return (
-                  <div key={idx} className={`${styles.message} ${msg.role === 'user' ? styles.userMessage : styles.aiMessage}`}>
-                    {msg.text}
-                  </div>
-                );
-              })}
+                  )}
+                </div>
+              ))}
             </div>
-            
+
             <form className={styles.chatInputArea} onSubmit={handleSend}>
-              <button 
-                type="button" 
-                className={styles.uploadBtn} 
-                aria-label="Upload document or image"
-                onClick={() => fileInputRef.current?.click()}
-                title="Upload document or image"
-              >
-                📎
-              </button>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={{ display: 'none' }} 
-                onChange={handleFileUpload}
-                accept="image/*,.pdf,.doc,.docx"
-              />
-              <input 
-                type="text" 
-                className={styles.chatInput} 
+              <input
+                type="text"
+                className={styles.chatInput}
                 placeholder="E.g., I have a severe headache and fever..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
+                disabled={isStreaming}
               />
-              <button type="submit" className={styles.sendBtn} aria-label="Send">
+              <button
+                type="submit"
+                className={styles.sendBtn}
+                aria-label="Send"
+                disabled={isStreaming || !inputValue.trim()}
+              >
                 ➤
               </button>
             </form>

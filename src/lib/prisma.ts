@@ -16,7 +16,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
-  throw new Error('DATABASE_URL is not set. Add it to frontend/.env');
+  throw new Error('DATABASE_URL is not set. Add it to .env at the project root.');
 }
 
 function createPrismaClient() {
