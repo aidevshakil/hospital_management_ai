@@ -26,7 +26,7 @@ const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 function secret(): string {
   const s = process.env.SESSION_SECRET;
-  if (!s) throw new Error('SESSION_SECRET is not set. Add it to frontend/.env');
+  if (!s) throw new Error('SESSION_SECRET is not set. Add it to .env at the project root.');
   return s;
 }
 
